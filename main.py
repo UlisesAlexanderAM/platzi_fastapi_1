@@ -1,4 +1,5 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import HTMLResponse
 
 app = FastAPI()
 app.title = "My application with FastAPI and Platzi"
@@ -16,5 +17,5 @@ movies: list[dict] = [
 ]
 
 @app.get("/", tags=["home"])
-def message():
-    return "Hello world!"
+def message() -> HTMLResponse:
+    return HTMLResponse("<h1>Hello world!</h1>")
