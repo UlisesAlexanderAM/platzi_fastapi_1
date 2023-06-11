@@ -38,7 +38,7 @@ def get_movies_by_category(
 @app.post("/movies", tags=["movies"])
 def add_movie(new_movie: Movie):
     movies.append(new_movie)
-    return JSONResponse(content={"message": "Se ha registrado la pelicula"})
+    return JSONResponse(content={"message": "Se ha registrado la película"})
 
 
 @app.put("/movies/{movie_id}", tags=["movies"])
@@ -49,11 +49,11 @@ def update_movie(movie_modified: Movie, movie_id: Annotated[int, Path(ge=1, le=2
     movie.year = movie_modified.year
     movie.rating = movie_modified.rating
     movie.category = movie_modified.category
-    return JSONResponse(content={"message": "Se ha modificado la pelicula"})
+    return JSONResponse(content={"message": "Se ha modificado la película"})
 
 
 @app.delete("/movies/{movie_id}", tags=["movies"])
 def delete_movie(movie_id: Annotated[int, Path(ge=1, le=2000)]):
     movie = filter_by_id(movies, movie_id)
     movies.remove(movie)
-    return JSONResponse(content={"message": "Se ha eliminado la pelicula"})
+    return JSONResponse(content={"message": "Se ha eliminado la película"})
