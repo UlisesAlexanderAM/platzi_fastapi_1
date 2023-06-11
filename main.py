@@ -45,7 +45,6 @@ def filter_by_category(movies_list: list, movie_category) -> list:
     )
 
 
-
 @app.get("/", tags=["home"])
 def message() -> HTMLResponse:
     return HTMLResponse("<h1>Hello world!</h1>")
@@ -71,3 +70,15 @@ def get_movies_by_category(category: str) -> list:
     return filter_by_category(movies, category)
 
 
+@app.post("/movies", tags=["movies"])
+def add_movie(new_movie: Movie):
+    movies.append(new_movie.dict())
+    return movies
+
+
+@app.put("/movies/{movie_id}", tags=["movies"])
+def update_movie(movie_id: int, movie_modified: MovieWithoutId):
+    for movie in movies:
+        if movie.get("id") == movie_id:
+            movie.update(movie_modified)
+    return movies
