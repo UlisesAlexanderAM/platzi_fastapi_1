@@ -4,21 +4,11 @@ from fastapi import FastAPI, Path, Query
 from fastapi.responses import HTMLResponse
 
 from models import Movie
+from data import movies
 
 app = FastAPI()
 app.title = "My application with FastAPI and Platzi"
 app.version = "0.0.1"
-
-movies: list[dict] = [
-    {
-        "id": 1,
-        "title": "Avatar",
-        "overview": "En un exuberante planeta llamado Pandora viven los Na'vi, seres que ...",
-        "year": 2009,
-        "rating": 7.8,
-        "category": "Acción",
-    }
-]
 
 
 def filter_by_id(movies_list: list, movie_id: int) -> dict:
