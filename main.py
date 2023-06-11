@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, List
 
 from fastapi import FastAPI, Path, Query
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -18,12 +18,12 @@ def message() -> HTMLResponse:
 
 
 @app.get("/movies", tags=["movies"])
-def get_movies() -> list:
+def get_movies() -> List[Movie]:
     return movies
 
 
 @app.get("/movies/{movie_id}", tags=["movies"])
-def get_movie(movie_id: Annotated[int, Path(ge=1, le=2000)]) -> dict:
+def get_movie(movie_id: Annotated[int, Path(ge=1, le=2000)]) -> Movie:
     movie = filter_by_id(movies, movie_id)
     return movie
 
@@ -31,21 +31,24 @@ def get_movie(movie_id: Annotated[int, Path(ge=1, le=2000)]) -> dict:
 @app.get("/movies/", tags=["movies"])
 def get_movies_by_category(
     category: Annotated[str, Query(min_length=5, max_length=15)]
-) -> list:
+) -> List[Movie]:
     return filter_by_category(movies, category)
 
 
 @app.post("/movies", tags=["movies"])
 def add_movie(new_movie: Movie):
-    movies.append(new_movie.dict())
+    movies.append(new_movie)
     return JSONResponse(content={"message": "Se ha registrado la pelicula"})
 
 
 @app.put("/movies/{movie_id}", tags=["movies"])
 def update_movie(movie_modified: Movie, movie_id: Annotated[int, Path(ge=1, le=2000)]):
     movie = filter_by_id(movies, movie_id)
-    movie.update(movie_modified)
-    movie["id"] = movie_id
+    movie.title = movie_modified.title
+    movie.overview = movie_modified.overview
+    movie.year = movie_modified.year
+    movie.rating = movie_modified.rating
+    movie.category = movie_modified.category
     return JSONResponse(content={"message": "Se ha modificado la pelicula"})
 
 
