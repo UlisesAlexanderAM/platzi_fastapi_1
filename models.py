@@ -4,8 +4,8 @@ from typing import Optional
 
 class Movie(BaseModel):
     id: Optional[int] = None
-    title: str = Field(min_length=5, max_length=15)
-    overview: str = Field(min_length=15, max_length=50)
+    title: str = Field(min_length=5, max_length=30)
+    overview: str = Field(min_length=15, max_length=150)
     year: int = Field(le=2022)
     rating: float = Field(ge=0.0, le=10.0)
     category: str = Field(min_lengt=5, max_lengt=15)
