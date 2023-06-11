@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
+from pydantic import BaseModel
 
 app = FastAPI()
 app.title = "My application with FastAPI and Platzi"
@@ -15,6 +16,24 @@ movies: list[dict] = [
         "category": "Acción",
     }
 ]
+
+class Movie(BaseModel):
+    id: int
+    title: str
+    overview: str
+    year: int
+    rating: float
+    category: str
+
+
+class MovieWithoutId(BaseModel):
+    title: str
+    overview: str
+    year: int
+    rating: float
+    category: str
+
+
 
 @app.get("/", tags=["home"])
 def message() -> HTMLResponse:
