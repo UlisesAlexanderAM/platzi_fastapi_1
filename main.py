@@ -34,6 +34,7 @@ class MovieWithoutId(BaseModel):
     rating: float
     category: str
 
+
 def filter_by_id(movies_list: list, movie_id: int) -> list:
     return list(filter(lambda movies: movies["id"] == movie_id, movies_list))
 
@@ -48,3 +49,25 @@ def filter_by_category(movies_list: list, movie_category) -> list:
 @app.get("/", tags=["home"])
 def message() -> HTMLResponse:
     return HTMLResponse("<h1>Hello world!</h1>")
+
+
+@app.get("/movies", tags=["movies"])
+def get_movies() -> list:
+    return movies
+
+
+@app.get("/movies/{movie_id}", tags=["movies"])
+def get_movie(movie_id: int) -> dict:
+    movie = filter_by_id(movies, movie_id)
+    if len(movie) == 0:
+        raise HTTPException(
+            status_code=404, detail=f"Movie with id = {movie_id} not found"
+        )
+    return movie[0]
+
+
+@app.get("/movies", tags=["movies"])
+def get_movies_by_category(category: str) -> list:
+    return filter_by_category(movies, category)
+
+
