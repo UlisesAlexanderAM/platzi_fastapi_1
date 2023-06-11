@@ -62,7 +62,7 @@ def get_movies() -> list:
 
 
 @app.get("/movies/{movie_id}", tags=["movies"])
-def get_movie(movie_id: int = Path(ge=1, le=2000)) -> dict:
+def get_movie(movie_id: Annotated[int, Path(ge=1, le=2000)]) -> dict:
     movie = filter_by_id(movies, movie_id)
     return movie
 
@@ -81,7 +81,7 @@ def add_movie(new_movie: Movie):
 
 
 @app.put("/movies/{movie_id}", tags=["movies"])
-def update_movie(movie_modified: Movie, movie_id: int = Path(ge=1, le=2000)):
+def update_movie(movie_modified: Movie, movie_id: Annotated[int, Path(ge=1, le=2000)]):
     movie = filter_by_id(movies, movie_id)
     movie.update(movie_modified)
     movie["id"] = movie_id
@@ -89,7 +89,7 @@ def update_movie(movie_modified: Movie, movie_id: int = Path(ge=1, le=2000)):
 
 
 @app.delete("/movies/{movie_id}", tags=["movies"])
-def delete_movie(movie_id: int = Path(ge=1, le=2000)):
+def delete_movie(movie_id: Annotated[int, Path(ge=1, le=2000)]):
     movie = filter_by_id(movies, movie_id)
     movies.remove(movie)
     return movies
