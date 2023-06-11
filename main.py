@@ -1,6 +1,7 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
+from typing import Optional
 
 app = FastAPI()
 app.title = "My application with FastAPI and Platzi"
@@ -19,7 +20,7 @@ movies: list[dict] = [
 
 
 class Movie(BaseModel):
-    id: int
+    id: Optional[int] = None
     title: str
     overview: str
     year: int
@@ -27,16 +28,9 @@ class Movie(BaseModel):
     category: str
 
 
-class MovieWithoutId(BaseModel):
-    title: str
-    overview: str
-    year: int
-    rating: float
-    category: str
-
-
-def filter_by_id(movies_list: list, movie_id: int) -> list:
-    return list(filter(lambda movies: movies["id"] == movie_id, movies_list))
+def filter_by_id(movies_list: list, movie_id: int)-> dict:
+    movie = next(filter(lambda movies: movies["id"] == movie_id, movies_list))
+    return movie
 
 
 def filter_by_category(movies_list: list, movie_category) -> list:
@@ -58,11 +52,7 @@ def get_movies() -> list:
 @app.get("/movies/{movie_id}", tags=["movies"])
 def get_movie(movie_id: int) -> dict:
     movie = filter_by_id(movies, movie_id)
-    if len(movie) == 0:
-        raise HTTPException(
-            status_code=404, detail=f"Movie with id = {movie_id} not found"
-        )
-    return movie[0]
+    return movie
 
 
 @app.get("/movies", tags=["movies"])
@@ -77,8 +67,15 @@ def add_movie(new_movie: Movie):
 
 
 @app.put("/movies/{movie_id}", tags=["movies"])
-def update_movie(movie_id: int, movie_modified: MovieWithoutId):
-    for movie in movies:
-        if movie.get("id") == movie_id:
-            movie.update(movie_modified)
+def update_movie(movie_id: int, movie_modified: Movie):
+    movie = filter_by_id(movies, movie_id)
+    movie.update(movie_modified)
+    movie["id"] = movie_id
+    return movies
+
+
+@app.delete("/movies/{movie_id}", tags=["movies"])
+def delete_movie(movie_id: int):
+    movie = filter_by_id(movies, movie_id)
+    movies.remove(movie)
     return movies
