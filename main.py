@@ -1,7 +1,7 @@
-from fastapi import FastAPI, Path
+from fastapi import FastAPI, Path, Query
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Annotated, Optional
 
 app = FastAPI()
 app.title = "My application with FastAPI and Platzi"
@@ -68,7 +68,9 @@ def get_movie(movie_id: int = Path(ge=1, le=2000)) -> dict:
 
 
 @app.get("/movies", tags=["movies"])
-def get_movies_by_category(category: str) -> list:
+def get_movies_by_category(
+    category: Annotated[str, Query(min_length=5, max_length=15)]
+) -> list:
     return filter_by_category(movies, category)
 
 
