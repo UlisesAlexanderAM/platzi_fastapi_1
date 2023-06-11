@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Path
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 from typing import Optional
@@ -27,7 +27,6 @@ class Movie(BaseModel):
     rating: float = Field(ge=0.0, le=10.0)
     category: str = Field(min_lengt=5, max_lengt=15)
 
-
     class Config:
         schema_extra = {
             "example": {
@@ -36,12 +35,12 @@ class Movie(BaseModel):
                 "overview": "Descripcion de la pelicula",
                 "year": 2022,
                 "rating": 6.5,
-                "category": "Acción"
+                "category": "Acción",
             }
         }
 
 
-def filter_by_id(movies_list: list, movie_id: int)-> dict:
+def filter_by_id(movies_list: list, movie_id: int) -> dict:
     movie = next(filter(lambda movies: movies["id"] == movie_id, movies_list))
     return movie
 
@@ -63,7 +62,7 @@ def get_movies() -> list:
 
 
 @app.get("/movies/{movie_id}", tags=["movies"])
-def get_movie(movie_id: int) -> dict:
+def get_movie(movie_id: int = Path(ge=1, le=2000)) -> dict:
     movie = filter_by_id(movies, movie_id)
     return movie
 
@@ -80,7 +79,7 @@ def add_movie(new_movie: Movie):
 
 
 @app.put("/movies/{movie_id}", tags=["movies"])
-def update_movie(movie_id: int, movie_modified: Movie):
+def update_movie(movie_modified: Movie, movie_id: int = Path(ge=1, le=2000)):
     movie = filter_by_id(movies, movie_id)
     movie.update(movie_modified)
     movie["id"] = movie_id
@@ -88,7 +87,7 @@ def update_movie(movie_id: int, movie_modified: Movie):
 
 
 @app.delete("/movies/{movie_id}", tags=["movies"])
-def delete_movie(movie_id: int):
+def delete_movie(movie_id: int = Path(ge=1, le=2000)):
     movie = filter_by_id(movies, movie_id)
     movies.remove(movie)
     return movies
