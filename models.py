@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
 
 
@@ -21,3 +21,8 @@ class Movie(BaseModel):
                 "category": "Acción",
             }
         }
+
+
+class User(BaseModel):
+    email: EmailStr
+    password: str

@@ -11,6 +11,8 @@ packages = [{include = "platzi_fastapi_1"}]
 python = "^3.11"
 fastapi = "^0.96.0"
 uvicorn = "^0.22.0"
+pyjwt = "^2.7.0"
+pydantic = {extras = ["email"], version = "^1.10.9"}
 
 
 [tool.poetry.group.dev.dependencies]
