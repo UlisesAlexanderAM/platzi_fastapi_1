@@ -4,7 +4,7 @@ from fastapi import Body, Depends, FastAPI, HTTPException, Path, Query, status, 
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.security import HTTPBearer
 
-from models import Movie, User
+from models import BaseMovie, MovieWithId, User
 from data import movies
 from filters import filter_by_id, filter_by_category
 from jwt_manager import create_token, validate_token
@@ -35,7 +35,7 @@ def login(user: User):
 
 
 @app.get("/movies", tags=["movies"], dependencies=[Depends(JWTBearer())])
-def get_movies() -> list[Movie]:
+def get_movies() -> list[MovieWithId]:
     return movies
 
 
@@ -63,14 +63,14 @@ def get_movies_by_category(
             max_length=15,
         ),
     ]
-) -> list[Movie]:
+) -> list[MovieWithId]:
     return filter_by_category(movies, category)
 
 
 @app.post("/movies", tags=["movies"])
 def add_movie(
     new_movie: Annotated[
-        Movie,
+        MovieWithId,
         Body(
             title="Request body",
             description="Request body with the movie to add",
@@ -85,7 +85,7 @@ def add_movie(
 @app.put("/movies/{movie_id}", tags=["movies"])
 def update_movie(
     movie_modified: Annotated[
-        Movie,
+        BaseMovie,
         Body(
             title="Request body",
             description="Request body with the data to modified of movie",
