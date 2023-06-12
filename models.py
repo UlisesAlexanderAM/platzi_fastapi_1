@@ -1,14 +1,19 @@
-from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
+
+from pydantic import BaseModel, EmailStr, Field
 
 
 class Movie(BaseModel):
     id: Optional[int] = None
-    title: str = Field(min_length=5, max_length=30)
-    overview: str = Field(min_length=15, max_length=150)
-    year: int = Field(le=2022)
-    rating: float = Field(ge=0.0, le=10.0)
-    category: str = Field(min_length=5, max_length=15)
+    title: str = Field(description="Title of the movie", min_length=5, max_length=30)
+    overview: str = Field(
+        description="Overview of the movie", min_length=15, max_length=150
+    )
+    year: int = Field(description="The year the movie was released", le=2022)
+    rating: float = Field(description="The rating given to the movie", ge=0.0, le=10.0)
+    category: str = Field(
+        description="Category of the movie", min_length=5, max_length=15
+    )
 
     class Config:
         schema_extra = {
@@ -24,5 +29,5 @@ class Movie(BaseModel):
 
 
 class User(BaseModel):
-    email: EmailStr
-    password: str
+    email: EmailStr = Field(description="User's login email")
+    password: str = Field(description="User's login password")
