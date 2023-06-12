@@ -40,7 +40,9 @@ def get_movies() -> List[Movie]:
 
 
 @app.get("/movies/{movie_id}", tags=["movies"])
-def get_movie(movie_id: Annotated[int, Path(ge=1, le=2000)]) -> Any:
+def get_movie(
+    movie_id: Annotated[int, Path(title="ID of the movie to get", ge=1, le=2000)]
+) -> Any:
     try:
         movie = filter_by_id(movies, movie_id)
     except StopIteration:
@@ -52,7 +54,15 @@ def get_movie(movie_id: Annotated[int, Path(ge=1, le=2000)]) -> Any:
 
 @app.get("/movies/", tags=["movies"])
 def get_movies_by_category(
-    category: Annotated[str, Query(min_length=5, max_length=15)]
+    category: Annotated[
+        str,
+        Query(
+            title="Query string",
+            description="Query string with the category of movies to search",
+            min_length=5,
+            max_length=15,
+        ),
+    ]
 ) -> List[Movie]:
     return filter_by_category(movies, category)
 
@@ -65,7 +75,8 @@ def add_movie(new_movie: Movie) -> JSONResponse:
 
 @app.put("/movies/{movie_id}", tags=["movies"])
 def update_movie(
-    movie_modified: Movie, movie_id: Annotated[int, Path(ge=1, le=2000)]
+    movie_modified: Movie,
+    movie_id: Annotated[int, Path(title="ID of the movie to modified", ge=1, le=2000)],
 ) -> JSONResponse:
     movie = filter_by_id(movies, movie_id)
     movie.title = movie_modified.title
@@ -77,7 +88,9 @@ def update_movie(
 
 
 @app.delete("/movies/{movie_id}", tags=["movies"])
-def delete_movie(movie_id: Annotated[int, Path(ge=1, le=2000)]) -> JSONResponse:
+def delete_movie(
+    movie_id: Annotated[int, Path(title="ID of the movie to delete", ge=1, le=2000)]
+) -> JSONResponse:
     movie = filter_by_id(movies, movie_id)
     movies.remove(movie)
     return JSONResponse(content={"message": "Se ha eliminado la película"})
