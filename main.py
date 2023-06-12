@@ -1,4 +1,4 @@
-from typing import Annotated, Any, List
+from typing import Annotated, Any
 
 from fastapi import Body, Depends, FastAPI, HTTPException, Path, Query, status, Request
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -35,7 +35,7 @@ def login(user: User):
 
 
 @app.get("/movies", tags=["movies"], dependencies=[Depends(JWTBearer())])
-def get_movies() -> List[Movie]:
+def get_movies() -> list[Movie]:
     return movies
 
 
@@ -63,7 +63,7 @@ def get_movies_by_category(
             max_length=15,
         ),
     ]
-) -> List[Movie]:
+) -> list[Movie]:
     return filter_by_category(movies, category)
 
 

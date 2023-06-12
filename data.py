@@ -1,8 +1,6 @@
-from typing import List
-
 from models import Movie
 
-movies: List[Movie] = [
+movies: list[Movie] = [
     Movie(
         id=1,
         title="Avatar",
