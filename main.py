@@ -1,13 +1,13 @@
 from typing import Annotated, Any
 
-from fastapi import Body, Depends, FastAPI, HTTPException, Path, Query, status, Request
+from fastapi import Body, Depends, FastAPI, HTTPException, Path, Query, Request, status
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.security import HTTPBearer
 
-from models import BaseMovie, MovieWithId, User
 from data import movies
-from filters import filter_by_id, filter_by_category
+from filters import filter_by_category, filter_by_id
 from jwt_manager import create_token, validate_token
+from models import BaseMovie, MovieWithId, User
 
 app = FastAPI()
 app.title = "My application with FastAPI and Platzi"
@@ -22,7 +22,7 @@ class JWTBearer(HTTPBearer):
             raise HTTPException(status_code=403, detail="Credenciales invalidas")
 
 
-@app.get("/", tags=["home"])
+@app.get("/", tags=["home"], status_code=status.HTTP_200_OK)
 def message() -> HTMLResponse:
     return HTMLResponse("<h1>Hello world!</h1>")
 
@@ -34,40 +34,17 @@ def login(user: User):
     return token
 
 
-@app.get("/movies", tags=["movies"], dependencies=[Depends(JWTBearer())])
+@app.get(
+    "/movies",
+    tags=["movies"],
+    dependencies=[Depends(JWTBearer())],
+    status_code=status.HTTP_200_OK,
+)
 def get_movies() -> list[MovieWithId]:
     return movies
 
 
-@app.get("/movies/{movie_id}", tags=["movies"])
-def get_movie(
-    movie_id: Annotated[int, Path(title="ID of the movie to get", ge=1, le=2000)]
-) -> Any:
-    try:
-        movie = filter_by_id(movies, movie_id)
-    except StopIteration:
-        return JSONResponse(
-            content={"message": "Could not find"}, status_code=status.HTTP_404_NOT_FOUND
-        )
-    return movie
-
-
-@app.get("/movies/", tags=["movies"])
-def get_movies_by_category(
-    category: Annotated[
-        str,
-        Query(
-            title="Query string",
-            description="Query string with the category of movies to search",
-            min_length=5,
-            max_length=15,
-        ),
-    ]
-) -> list[MovieWithId]:
-    return filter_by_category(movies, category)
-
-
-@app.post("/movies", tags=["movies"])
+@app.post("/movies", tags=["movies"], status_code=status.HTTP_201_CREATED)
 def add_movie(
     new_movie: Annotated[
         MovieWithId,
@@ -82,7 +59,35 @@ def add_movie(
     return JSONResponse(content={"message": "Se ha registrado la película"})
 
 
-@app.put("/movies/{movie_id}", tags=["movies"])
+@app.get("/movies/", tags=["movies"], status_code=status.HTTP_200_OK)
+def get_movies_by_category(
+    category: Annotated[
+        str,
+        Query(
+            title="Query string",
+            description="Query string with the category of movies to search",
+            min_length=5,
+            max_length=15,
+        ),
+    ]
+) -> list[MovieWithId]:
+    return filter_by_category(movies, category)
+
+
+@app.get("/movies/{movie_id}", tags=["movies"], status_code=status.HTTP_200_OK)
+def get_movie(
+    movie_id: Annotated[int, Path(title="ID of the movie to get", ge=1, le=2000)]
+) -> Any:
+    try:
+        movie = filter_by_id(movies, movie_id)
+    except StopIteration:
+        return JSONResponse(
+            content={"message": "Could not find"}, status_code=status.HTTP_404_NOT_FOUND
+        )
+    return movie
+
+
+@app.put("/movies/{movie_id}", tags=["movies"], status_code=status.HTTP_200_OK)
 def update_movie(
     movie_modified: Annotated[
         BaseMovie,
@@ -103,7 +108,7 @@ def update_movie(
     return JSONResponse(content={"message": "Se ha modificado la película"})
 
 
-@app.delete("/movies/{movie_id}", tags=["movies"])
+@app.delete("/movies/{movie_id}", tags=["movies"], status_code=status.HTTP_200_OK)
 def delete_movie(
     movie_id: Annotated[int, Path(title="ID of the movie to delete", ge=1, le=2000)]
 ) -> JSONResponse:
