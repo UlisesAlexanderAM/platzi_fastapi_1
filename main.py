@@ -1,6 +1,6 @@
 from typing import Annotated, Any, List
 
-from fastapi import Depends, FastAPI, HTTPException, Path, Query, status, Request
+from fastapi import Body, Depends, FastAPI, HTTPException, Path, Query, status, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.security import HTTPBearer
 
@@ -68,14 +68,30 @@ def get_movies_by_category(
 
 
 @app.post("/movies", tags=["movies"])
-def add_movie(new_movie: Movie) -> JSONResponse:
+def add_movie(
+    new_movie: Annotated[
+        Movie,
+        Body(
+            title="Request body",
+            description="Request body with the movie to add",
+            embed=True,
+        ),
+    ]
+) -> JSONResponse:
     movies.append(new_movie)
     return JSONResponse(content={"message": "Se ha registrado la película"})
 
 
 @app.put("/movies/{movie_id}", tags=["movies"])
 def update_movie(
-    movie_modified: Movie,
+    movie_modified: Annotated[
+        Movie,
+        Body(
+            title="Request body",
+            description="Request body with the data to modified of movie",
+            embed=True,
+        ),
+    ],
     movie_id: Annotated[int, Path(title="ID of the movie to modified", ge=1, le=2000)],
 ) -> JSONResponse:
     movie = filter_by_id(movies, movie_id)
