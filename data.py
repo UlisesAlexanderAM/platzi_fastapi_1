@@ -1,7 +1,7 @@
 from models import MovieWithId
 
 movies: list[MovieWithId] = [
-    BaseMovie(
+    MovieWithId(
         id=1,
         title="Avatar",
         overview="En un exuberante planeta llamado Pandora viven los Na'vi, seres que ...",
