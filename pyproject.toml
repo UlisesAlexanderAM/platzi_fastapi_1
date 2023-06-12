@@ -1,11 +1,10 @@
 [tool.poetry]
-name = "platzi-fastapi-1"
+name = "platzi-fastapi-peliculas"
 version = "0.0.1"
 description = ""
 authors = ["Ulises Alexander Arguelles Monjaraz <30351520+UlisesAlexanderAM@users.noreply.github.com>"]
 license = "MIT"
 readme = "README.md"
-packages = [{include = "platzi_fastapi_1"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
