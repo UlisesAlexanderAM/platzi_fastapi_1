@@ -1,25 +1,22 @@
+from datetime import timedelta
 from typing import Annotated, Any
 
 from fastapi import Body, Depends, FastAPI, HTTPException, Path, Query, Request, status
 from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.security import HTTPBearer
-
-from data import movies
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from data import movies, fake_users_db
 from filters import filter_by_category, filter_by_id
-from jwt_manager import create_token, validate_token
-from models import BaseMovie, MovieWithId, User
+from models import BaseMovie, MovieWithId, Token, User
+from security import (
+    ACCESS_TOKEN_EXPIRE_MINUTES,
+    authenticate_user,
+    create_access_token,
+    get_current_active_user,
+)
 
 app = FastAPI()
 app.title = "My application with FastAPI and Platzi"
 app.version = "0.0.1"
-
-
-class JWTBearer(HTTPBearer):
-    async def __call__(self, request: Request):
-        auth = await super().__call__(request)
-        data = validate_token(auth.credentials)
-        if data["email"] != "admin@gmail.com":
-            raise HTTPException(status_code=403, detail="Credenciales invalidas")
 
 
 @app.get("/", tags=["home"], status_code=status.HTTP_200_OK)
@@ -27,20 +24,32 @@ def message() -> HTMLResponse:
     return HTMLResponse("<h1>Hello world!</h1>")
 
 
-@app.post("/login", tags=["auth"])
-def login(user: User):
-    if user.email == "admin@gmail.com" and user.password == "admin":
-        token = create_token(user.dict())
-        return token
+@app.post("/token", response_model=Token)
+async def login_for_access_token(
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
+):
+    user = authenticate_user(fake_users_db, form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.username}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
 
 
 @app.get(
-    "/movies",
+    path="/movies",
     tags=["movies"],
-    dependencies=[Depends(JWTBearer())],
     status_code=status.HTTP_200_OK,
 )
-def get_movies() -> list[MovieWithId]:
+def get_movies(
+    current_user: Annotated[User, Depends(get_current_active_user)]
+) -> list[MovieWithId]:
     return movies
 
 

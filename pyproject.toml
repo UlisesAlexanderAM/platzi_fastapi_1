@@ -10,8 +10,10 @@ readme = "README.md"
 python = "^3.11"
 fastapi = "^0.96.0"
 uvicorn = "^0.22.0"
-pyjwt = "^2.7.0"
 pydantic = {extras = ["email"], version = "^1.10.9"}
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+python-multipart = "^0.0.6"
 
 [tool.mypy]
 plugins = ["pydantic.mypy"]

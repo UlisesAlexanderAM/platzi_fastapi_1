@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel, EmailStr, Field
 
 
@@ -31,15 +32,29 @@ class MovieWithId(BaseMovie):
         schema_extra = {
             "example": {
                 "id": 1,
-                "title": "Titulo de la película",
-                "overview": "Descripción de la película",
-                "year": 2022,
-                "rating": 6.5,
-                "category": "Acción",
+                # "title": "Titulo de la película",
+                # "overview": "Descripción de la película",
+                # "year": 2022,
+                # "rating": 6.5,
+                # "category": "Acción",
             }
         }
 
 
 class User(BaseModel):
+    username: str
     email: EmailStr = Field(description="User's login email")
-    password: str = Field(description="User's login password")
+    disabled: Optional[bool] = None
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    username: Optional[str] = None
+
+
+class UserInDB(User):
+    hashed_password: str
