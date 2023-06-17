@@ -2,6 +2,6 @@
     "python.linting.mypyEnabled": true,
     "editor.formatOnSave": true,
     "python.linting.pylintPath": "",
-    "python.analysis.typeCheckingMode": "strict",
+    "python.analysis.typeCheckingMode": "basic",
     "python.linting.mypyPath": "/home/ulisesaam/Proyectos/platzi_fastapi_1/.venv/bin/mypy"
 }
