@@ -1,14 +1,15 @@
 from datetime import timedelta
 from typing import Annotated, Any
 
-from fastapi import Body, Depends, FastAPI, HTTPException, Path, Query, Request, status
+from fastapi import Body, Depends, FastAPI, HTTPException, Path, Query, status
 from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from data import movies, fake_users_db
+from fastapi.security import OAuth2PasswordRequestForm
+
+from data import fake_users_db, movies
 from filters import filter_by_category, filter_by_id
 from models import BaseMovie, MovieWithId, Token, User
 from security import (
-    ACCESS_TOKEN_EXPIRE_MINUTES,
+    settings,
     authenticate_user,
     create_access_token,
     get_current_active_user,
@@ -35,7 +36,7 @@ async def login_for_access_token(
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token_expires = timedelta(minutes=settings["ACCESS_TOKEN_EXPIRE_MINUTES"])
     access_token = create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )
