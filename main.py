@@ -81,9 +81,10 @@ def get_movie(
     try:
         movie = filter_by_id(movies, movie_id)
     except StopIteration:
-        return JSONResponse(
-            content={"message": "Could not find"}, status_code=status.HTTP_404_NOT_FOUND
-        )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Pelicula con ID {movie_id} no encontrada",
+        ) from None
     return movie
 
 
@@ -99,7 +100,13 @@ def update_movie(
     ],
     movie_id: Annotated[int, Path(title="ID of the movie to modified", ge=1, le=2000)],
 ) -> JSONResponse:
-    movie = filter_by_id(movies, movie_id)
+    try:
+        movie = filter_by_id(movies, movie_id)
+    except StopIteration:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Película con ID {movie_id} no encontrada",
+        ) from None
     movie.title = movie_modified.title
     movie.overview = movie_modified.overview
     movie.year = movie_modified.year
@@ -112,6 +119,12 @@ def update_movie(
 def delete_movie(
     movie_id: Annotated[int, Path(title="ID of the movie to delete", ge=1, le=2000)]
 ) -> JSONResponse:
-    movie = filter_by_id(movies, movie_id)
+    try:
+        movie = filter_by_id(movies, movie_id)
+    except StopIteration:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Pelicula con ID {movie_id} no encontrada",
+        ) from None
     movies.remove(movie)
     return JSONResponse(content={"message": "Se ha eliminado la película"})
