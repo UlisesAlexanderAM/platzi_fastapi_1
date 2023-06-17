@@ -31,7 +31,7 @@ def message() -> HTMLResponse:
 def login(user: User):
     if user.email == "admin@gmail.com" and user.password == "admin":
         token = create_token(user.dict())
-    return token
+        return token
 
 
 @app.get(
