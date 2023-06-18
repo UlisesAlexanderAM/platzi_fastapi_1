@@ -5,23 +5,12 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from pydantic import BaseSettings, Field
+
 
 from data import fake_users_db, get_user
-from models import TokenData, User
+from models.models import TokenData, User
+from config.security import settings
 
-
-class Settings(BaseSettings):
-    SECRET_KEY: str
-    ALGORITHM: str
-    ACCESS_TOKEN_EXPIRE_MINUTES: int
-
-    class Config:
-        case_sensitive = False
-        env_file = ".env"
-
-
-settings = Settings().dict()
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")

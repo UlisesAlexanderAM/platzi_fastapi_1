@@ -1,7 +1,7 @@
-from models import MovieWithId, UserInDB
+from models.models import Movie, UserInDB
 
-movies: list[MovieWithId] = [
-    MovieWithId(
+movies: list[Movie] = [
+    Movie(
         id=1,
         title="Avatar",
         overview="En un exuberante planeta llamado Pandora viven los Na'vi, seres que ...",

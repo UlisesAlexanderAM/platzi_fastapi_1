@@ -1,8 +1,9 @@
 from typing import Optional
+
 from pydantic import BaseModel, EmailStr, Field
 
 
-class BaseMovie(BaseModel):
+class Movie(BaseModel):
     title: str = Field(description="Title of the movie", min_length=5, max_length=30)
     overview: str = Field(
         description="Overview of the movie", min_length=15, max_length=150
@@ -21,22 +22,6 @@ class BaseMovie(BaseModel):
                 "year": 2022,
                 "rating": 6.5,
                 "category": "Acción",
-            }
-        }
-
-
-class MovieWithId(BaseMovie):
-    id: int = Field(description="The ID of the movie")
-
-    class Config:
-        schema_extra = {
-            "example": {
-                "id": 1,
-                # "title": "Titulo de la película",
-                # "overview": "Descripción de la película",
-                # "year": 2022,
-                # "rating": 6.5,
-                # "category": "Acción",
             }
         }
 

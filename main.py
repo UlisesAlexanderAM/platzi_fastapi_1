@@ -5,19 +5,23 @@ from fastapi import Body, Depends, FastAPI, HTTPException, Path, Query, status
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 
+from config.database import Base, Session, engine
 from data import fake_users_db, movies
 from filters import filter_by_category, filter_by_id
-from models import BaseMovie, MovieWithId, Token, User
+from models.models import Movie, Token, User
+from models.movie_db import MovieDB as MovieDB
 from security import (
-    settings,
     authenticate_user,
     create_access_token,
     get_current_active_user,
+    settings,
 )
 
 app = FastAPI()
 app.title = "My application with FastAPI and Platzi"
 app.version = "0.0.1"
+
+Base.metadata.create_all(bind=engine)
 
 
 @app.get("/", tags=["home"], status_code=status.HTTP_200_OK)
@@ -50,14 +54,14 @@ async def login_for_access_token(
 )
 def get_movies(
     current_user: Annotated[User, Depends(get_current_active_user)]
-) -> list[MovieWithId]:
+) -> list[Movie]:
     return movies
 
 
 @app.post("/movies", tags=["movies"], status_code=status.HTTP_201_CREATED)
 def add_movie(
     new_movie: Annotated[
-        MovieWithId,
+        Movie,
         Body(
             title="Request body",
             description="Request body with the movie to add",
@@ -65,7 +69,10 @@ def add_movie(
         ),
     ]
 ) -> JSONResponse:
-    movies.append(new_movie)
+    db = Session()
+    movie = MovieDB(**new_movie.dict())
+    db.add(movie)
+    db.commit()
     return JSONResponse(content={"message": "Se ha registrado la película"})
 
 
@@ -80,7 +87,7 @@ def get_movies_by_category(
             max_length=15,
         ),
     ]
-) -> list[MovieWithId]:
+) -> list[Movie]:
     return filter_by_category(movies, category)
 
 
@@ -101,7 +108,7 @@ def get_movie(
 @app.put("/movies/{movie_id}", tags=["movies"], status_code=status.HTTP_200_OK)
 def update_movie(
     movie_modified: Annotated[
-        BaseMovie,
+        Movie,
         Body(
             title="Request body",
             description="Request body with the data to modified of movie",
