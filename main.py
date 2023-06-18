@@ -52,10 +52,9 @@ async def login_for_access_token(
     tags=["movies"],
     status_code=status.HTTP_200_OK,
 )
-def get_movies(
-    current_user: Annotated[User, Depends(get_current_active_user)]
-) -> list[Movie]:
-    return movies
+def get_movies(current_user: Annotated[User, Depends(get_current_active_user)]):
+    db = Session()
+    return db.query(MovieDB).all()
 
 
 @app.post("/movies", tags=["movies"], status_code=status.HTTP_201_CREATED)
@@ -76,7 +75,11 @@ def add_movie(
     return JSONResponse(content={"message": "Se ha registrado la película"})
 
 
-@app.get("/movies/", tags=["movies"], status_code=status.HTTP_200_OK)
+@app.get(
+    "/movies/",
+    tags=["movies"],
+    status_code=status.HTTP_200_OK,
+)
 def get_movies_by_category(
     category: Annotated[
         str,
@@ -87,22 +90,27 @@ def get_movies_by_category(
             max_length=15,
         ),
     ]
-) -> list[Movie]:
-    return filter_by_category(movies, category)
+):
+    movies = filter_by_category(category)
+    if not movies:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No se encontraron peliculas de la categoria: {category}.",
+        )
+    return movies
 
 
 @app.get("/movies/{movie_id}", tags=["movies"], status_code=status.HTTP_200_OK)
 def get_movie(
     movie_id: Annotated[int, Path(title="ID of the movie to get", ge=1, le=2000)]
 ) -> Any:
-    try:
-        movie = filter_by_id(movies, movie_id)
-    except StopIteration:
+    result = filter_by_id(movie_id)
+    if not result:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Pelicula con ID {movie_id} no encontrada",
-        ) from None
-    return movie
+            detail=f"No se encontró la película con ID: {movie_id}.",
+        )
+    return result
 
 
 @app.put("/movies/{movie_id}", tags=["movies"], status_code=status.HTTP_200_OK)

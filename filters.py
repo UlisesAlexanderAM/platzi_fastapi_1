@@ -1,10 +1,12 @@
-from models.models import Movie
+from config.database import Session
+from models.movie_db import MovieDB
 
 
-def filter_by_id(movies_list: list[Movie], movie_id: int) -> Movie:
-    movie = next(filter(lambda movies: movies.id == movie_id, movies_list))
-    return movie
+def filter_by_id(movie_id: int) -> MovieDB:
+    db = Session()
+    return db.query(MovieDB).filter(MovieDB.id == movie_id).first()
 
 
-def filter_by_category(movies_list: list[Movie], movie_category: str) -> list[Movie]:
-    return list(filter(lambda movies: movies.category == movie_category, movies_list))
+def filter_by_category(movie_category: str) -> list[MovieDB]:
+    db = Session()
+    return db.query(MovieDB).filter(MovieDB.category == movie_category).all()
