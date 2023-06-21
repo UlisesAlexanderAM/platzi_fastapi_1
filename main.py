@@ -4,10 +4,10 @@ from typing import Annotated, Any
 from fastapi import Body, Depends, FastAPI, HTTPException, Path, Query, status
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
-
+from fastapi.encoders import jsonable_encoder
 from config.database import Base, Session, engine
 from data import fake_users_db, movies
-from filters import filter_by_category, filter_by_id
+from database_operations import filter_by_category, filter_by_id, get_all_movies
 from models.models import Movie, Token, User
 from models.movie_db import MovieDB as MovieDB
 from security import (
@@ -51,10 +51,10 @@ async def login_for_access_token(
     path="/movies",
     tags=["movies"],
     status_code=status.HTTP_200_OK,
+    response_model=list[Movie],
 )
-def get_movies(current_user: Annotated[User, Depends(get_current_active_user)]):
-    db = Session()
-    return db.query(MovieDB).all()
+def get_movies(current_user: Annotated[User, Depends(get_current_active_user)]) -> Any:
+    return jsonable_encoder(get_all_movies())
 
 
 @app.post("/movies", tags=["movies"], status_code=status.HTTP_201_CREATED)
@@ -79,6 +79,7 @@ def add_movie(
     "/movies/",
     tags=["movies"],
     status_code=status.HTTP_200_OK,
+    response_model=list[Movie],
 )
 def get_movies_by_category(
     category: Annotated[
@@ -90,17 +91,22 @@ def get_movies_by_category(
             max_length=15,
         ),
     ]
-):
+) -> Any:
     movies = filter_by_category(category)
     if not movies:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"No se encontraron peliculas de la categoria: {category}.",
         )
-    return movies
+    return jsonable_encoder(movies)
 
 
-@app.get("/movies/{movie_id}", tags=["movies"], status_code=status.HTTP_200_OK)
+@app.get(
+    "/movies/{movie_id}",
+    tags=["movies"],
+    status_code=status.HTTP_200_OK,
+    response_model=Movie,
+)
 def get_movie(
     movie_id: Annotated[int, Path(title="ID of the movie to get", ge=1, le=2000)]
 ) -> Any:
@@ -110,7 +116,7 @@ def get_movie(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"No se encontró la película con ID: {movie_id}.",
         )
-    return result
+    return jsonable_encoder(result)
 
 
 @app.put("/movies/{movie_id}", tags=["movies"], status_code=status.HTTP_200_OK)
@@ -125,18 +131,12 @@ def update_movie(
     ],
     movie_id: Annotated[int, Path(title="ID of the movie to modified", ge=1, le=2000)],
 ) -> JSONResponse:
-    try:
-        movie = filter_by_id(movies, movie_id)
-    except StopIteration:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Película con ID {movie_id} no encontrada",
-        ) from None
-    movie.title = movie_modified.title
-    movie.overview = movie_modified.overview
-    movie.year = movie_modified.year
-    movie.rating = movie_modified.rating
-    movie.category = movie_modified.category
+    movie = filter_by_id(movie_id)
+    # movie.title = movie_modified.title
+    # movie.overview = movie_modified.overview
+    # movie.year = movie_modified.year
+    # movie.rating = movie_modified.rating
+    # movie.category = movie_modified.category
     return JSONResponse(content={"message": "Se ha modificado la película"})
 
 
@@ -145,7 +145,7 @@ def delete_movie(
     movie_id: Annotated[int, Path(title="ID of the movie to delete", ge=1, le=2000)]
 ) -> JSONResponse:
     try:
-        movie = filter_by_id(movies, movie_id)
+        movie = filter_by_id(movie_id)
     except StopIteration:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
