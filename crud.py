@@ -1,5 +1,5 @@
 from config.database import Session
-from models.movie_db import MovieDB
+from models.models import MovieDB
 
 
 def filter_by_id(movie_id: int) -> MovieDB:

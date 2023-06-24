@@ -2,20 +2,21 @@ from datetime import timedelta
 from typing import Annotated, Any
 
 from fastapi import Body, Depends, FastAPI, HTTPException, Path, Query, status
+from fastapi.encoders import jsonable_encoder
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
-from fastapi.encoders import jsonable_encoder
+
 from config.database import Base, Session, engine
 from data import fake_users_db, movies
-from database_operations import filter_by_category, filter_by_id, get_all_movies
-from models.models import Movie, Token, User
-from models.movie_db import MovieDB as MovieDB
+from models import models, schemas
 from security import (
     authenticate_user,
     create_access_token,
     get_current_active_user,
     settings,
 )
+
+from . import crud
 
 app = FastAPI()
 app.title = "My application with FastAPI and Platzi"
@@ -54,7 +55,7 @@ async def login_for_access_token(
     response_model=list[Movie],
 )
 def get_movies(current_user: Annotated[User, Depends(get_current_active_user)]) -> Any:
-    return jsonable_encoder(get_all_movies())
+    return jsonable_encoder(crud.get_all_movies())
 
 
 @app.post("/movies", tags=["movies"], status_code=status.HTTP_201_CREATED)

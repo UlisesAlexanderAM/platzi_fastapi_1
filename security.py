@@ -8,7 +8,7 @@ from passlib.context import CryptContext
 
 
 from data import fake_users_db, get_user
-from models.models import TokenData, User
+from models.schemas import TokenData, User
 from config.security import settings
 
 

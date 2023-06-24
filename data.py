@@ -1,4 +1,4 @@
-from models.models import Movie, UserInDB
+from models.schemas import Movie, UserInDB
 
 movies: list[Movie] = [
     Movie(
