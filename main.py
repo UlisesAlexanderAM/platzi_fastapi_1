@@ -11,14 +11,14 @@ from sqlalchemy.orm import Session
 from config.database import Base, SessionLocal, engine
 from data import fake_users_db, movies
 from models import models, schemas
-from lib.security import (
+from security import (
     authenticate_user,
     create_access_token,
     get_current_active_user,
     settings,
 )
 
-from lib import crud
+import crud
 
 app = FastAPI()
 app.title = "My application with FastAPI and Platzi"
@@ -136,7 +136,7 @@ def get_movie(
 @app.put("/movies/{movie_id}", tags=["movies"], status_code=status.HTTP_200_OK)
 def update_movie(
     movie_modified: Annotated[
-        schemas.Movie,
+        schemas.MovieBase,
         Body(
             title="Request body",
             description="Request body with the data to modified of movie",
@@ -145,14 +145,9 @@ def update_movie(
     ],
     movie_id: Annotated[int, Path(title="ID of the movie to modified", ge=1, le=2000)],
     db: Annotated[Session, Depends(get_db)],
-) -> JSONResponse:
-    movie = crud.get_movie_by_id(db, movie_id)
-    # movie.title = movie_modified.title
-    # movie.overview = movie_modified.overview
-    # movie.year = movie_modified.year
-    # movie.rating = movie_modified.rating
-    # movie.category = movie_modified.category
-    return JSONResponse(content={"message": "Se ha modificado la película"})
+):
+    movie_updated = crud.update_movie(db, movie_id, movie_modified)
+    return f"Se ha modificado la película {jsonable_encoder(movie_updated)}"
 
 
 @app.delete("/movies/{movie_id}", tags=["movies"], status_code=status.HTTP_200_OK)
