@@ -1,64 +1,23 @@
-from datetime import timedelta
 from typing import Annotated, Any
 
-from fastapi import Body, Depends, FastAPI, HTTPException, Path, Query, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query, status
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import HTMLResponse
-from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-import crud
-from config.database import Base, SessionLocal, engine
-from data import fake_users_db
-from models import schemas
-from security import (
-    authenticate_user,
-    create_access_token,
-    get_current_active_user,
-    settings,
+from app import crud
+from app.dependencies import get_db
+from app.models import schemas
+from app.security import get_current_active_user
+
+router = APIRouter(
+    prefix="/movies",
+    tags=["movies"],
+    responses={404: {"description": "Movie not found"}},
 )
 
-app = FastAPI()
-app.title = "My application with FastAPI and Platzi"
-app.version = "0.0.1"
 
-Base.metadata.create_all(bind=engine)
-
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-@app.get("/", tags=["home"], status_code=status.HTTP_200_OK)
-def message() -> HTMLResponse:
-    return HTMLResponse("<h1>Hello world!</h1>")
-
-
-@app.post("/token", tags=["auth"], response_model=schemas.Token)
-async def login_for_access_token(
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
-):
-    user = authenticate_user(fake_users_db, form_data.username, form_data.password)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user.username}, expires_delta=access_token_expires
-    )
-    return {"access_token": access_token, "token_type": "bearer"}
-
-
-@app.get(
-    path="/movies",
-    tags=["movies"],
+@router.get(
+    path="/",
     status_code=status.HTTP_200_OK,
     response_model=list[schemas.Movie],
 )
@@ -69,7 +28,7 @@ def get_movies(
     return jsonable_encoder(crud.get_all_movies(db))
 
 
-@app.post("/movies", tags=["movies"], status_code=status.HTTP_201_CREATED)
+@router.post("/movies", status_code=status.HTTP_201_CREATED)
 def add_movie(
     new_movie: Annotated[
         schemas.MovieBase,
@@ -85,9 +44,8 @@ def add_movie(
     return f"Se ha registrado la película: {jsonable_encoder(movie_added)}"
 
 
-@app.get(
-    "/movies/",
-    tags=["movies"],
+@router.get(
+    "/",
     status_code=status.HTTP_200_OK,
     response_model=list[schemas.Movie],
 )
@@ -112,9 +70,8 @@ def get_movies_by_category(
     return jsonable_encoder(movies)
 
 
-@app.get(
-    "/movies/{movie_id}",
-    tags=["movies"],
+@router.get(
+    "/{movie_id}",
     status_code=status.HTTP_200_OK,
     response_model=schemas.Movie,
 )
@@ -131,7 +88,7 @@ def get_movie(
     return movie
 
 
-@app.put("/movies/{movie_id}", tags=["movies"], status_code=status.HTTP_200_OK)
+@router.put("/{movie_id}", status_code=status.HTTP_200_OK)
 def update_movie(
     movie_modified: Annotated[
         schemas.MovieBase,
@@ -148,7 +105,7 @@ def update_movie(
     return f"Se ha modificado la película {jsonable_encoder(movie_updated)}"
 
 
-@app.delete("/movies/{movie_id}", tags=["movies"], status_code=status.HTTP_200_OK)
+@router.delete("/{movie_id}", status_code=status.HTTP_200_OK)
 def delete_movie(
     movie_id: Annotated[int, Path(title="ID of the movie to delete", ge=1, le=2000)],
     db: Annotated[Session, Depends(get_db)],

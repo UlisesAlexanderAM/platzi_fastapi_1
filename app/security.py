@@ -7,9 +7,9 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 
 
-from data import fake_users_db, get_user
-from models.schemas import TokenData, User
-from config.security import settings
+from app.data import fake_users_db, get_user
+from app.models.schemas import TokenData, User
+from app.config.security import settings
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

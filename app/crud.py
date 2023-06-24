@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
-from models import models, schemas
+from app.models import models, schemas
 
 
 def get_movie_by_id(db: Session, movie_id: int):
