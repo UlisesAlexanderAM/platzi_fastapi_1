@@ -3,7 +3,7 @@ from typing import Optional
 from pydantic import BaseModel, EmailStr, Field
 
 
-class Movie(BaseModel):
+class MovieBase(BaseModel):
     title: str = Field(description="Title of the movie", min_length=5, max_length=30)
     overview: str = Field(
         description="Overview of the movie", min_length=15, max_length=150
@@ -24,6 +24,13 @@ class Movie(BaseModel):
                 "category": "Acción",
             }
         }
+
+
+class Movie(MovieBase):
+    id: int
+
+    class Config:
+        orm_mode = True
 
 
 class User(BaseModel):

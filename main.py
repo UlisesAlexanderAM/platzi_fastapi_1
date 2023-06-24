@@ -40,7 +40,7 @@ def message() -> HTMLResponse:
     return HTMLResponse("<h1>Hello world!</h1>")
 
 
-@app.post("/token", response_model=Token)
+@app.post("/token", response_model=schemas.Token)
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
 ):
@@ -62,10 +62,10 @@ async def login_for_access_token(
     path="/movies",
     tags=["movies"],
     status_code=status.HTTP_200_OK,
-    response_model=list[Movie],
+    response_model=list[schemas.Movie],
 )
 def get_movies(
-    current_user: Annotated[User, Depends(get_current_active_user)],
+    current_user: Annotated[schemas.User, Depends(get_current_active_user)],
     db: Annotated[Session, Depends(get_db)],
 ) -> Any:
     return jsonable_encoder(crud.get_all_movies(db))
@@ -74,7 +74,7 @@ def get_movies(
 @app.post("/movies", tags=["movies"], status_code=status.HTTP_201_CREATED)
 def add_movie(
     new_movie: Annotated[
-        Movie,
+        schemas.Movie,
         Body(
             title="Request body",
             description="Request body with the movie to add",
@@ -83,7 +83,7 @@ def add_movie(
     ]
 ) -> JSONResponse:
     db = Session()
-    movie = MovieDB(**new_movie.dict())
+    movie = models.Movie(**new_movie.dict())
     db.add(movie)
     db.commit()
     return JSONResponse(content={"message": "Se ha registrado la película"})
@@ -93,7 +93,7 @@ def add_movie(
     "/movies/",
     tags=["movies"],
     status_code=status.HTTP_200_OK,
-    response_model=list[Movie],
+    response_model=list[schemas.Movie],
 )
 def get_movies_by_category(
     category: Annotated[
@@ -120,7 +120,7 @@ def get_movies_by_category(
     "/movies/{movie_id}",
     tags=["movies"],
     status_code=status.HTTP_200_OK,
-    response_model=Movie,
+    response_model=schemas.Movie,
 )
 def get_movie(
     movie_id: Annotated[int, Path(title="ID of the movie to get", ge=1, le=2000)],
@@ -138,7 +138,7 @@ def get_movie(
 @app.put("/movies/{movie_id}", tags=["movies"], status_code=status.HTTP_200_OK)
 def update_movie(
     movie_modified: Annotated[
-        Movie,
+        schemas.Movie,
         Body(
             title="Request body",
             description="Request body with the data to modified of movie",
@@ -146,8 +146,9 @@ def update_movie(
         ),
     ],
     movie_id: Annotated[int, Path(title="ID of the movie to modified", ge=1, le=2000)],
+    db: Annotated[Session, Depends(get_db)],
 ) -> JSONResponse:
-    movie = crud.get_movie_by_id(movie_id)
+    movie = crud.get_movie_by_id(db, movie_id)
     # movie.title = movie_modified.title
     # movie.overview = movie_modified.overview
     # movie.year = movie_modified.year
@@ -158,10 +159,11 @@ def update_movie(
 
 @app.delete("/movies/{movie_id}", tags=["movies"], status_code=status.HTTP_200_OK)
 def delete_movie(
-    movie_id: Annotated[int, Path(title="ID of the movie to delete", ge=1, le=2000)]
+    movie_id: Annotated[int, Path(title="ID of the movie to delete", ge=1, le=2000)],
+    db: Annotated[Session, Depends(get_db)],
 ) -> JSONResponse:
     try:
-        movie = crud.get_movie_by_id(movie_id)
+        movie = crud.get_movie_by_id(db,movie_id)
     except StopIteration:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
