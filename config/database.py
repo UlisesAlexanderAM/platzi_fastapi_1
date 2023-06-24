@@ -20,6 +20,6 @@ class Settings(BaseSettings):
 settings = Settings()
 engine = create_engine(settings.sqlite_url, echo=True)
 
-Session = sessionmaker(bind=engine)
+SessionLocal = sessionmaker(bind=engine)
 
 Base = declarative_base()

@@ -5,8 +5,10 @@ from fastapi import Body, Depends, FastAPI, HTTPException, Path, Query, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy.orm import Session
 
-from config.database import Base, Session, engine
+
+from config.database import Base, SessionLocal, engine
 from data import fake_users_db, movies
 from models import models, schemas
 from security import (
@@ -23,6 +25,14 @@ app.title = "My application with FastAPI and Platzi"
 app.version = "0.0.1"
 
 Base.metadata.create_all(bind=engine)
+
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 @app.get("/", tags=["home"], status_code=status.HTTP_200_OK)
@@ -54,8 +64,11 @@ async def login_for_access_token(
     status_code=status.HTTP_200_OK,
     response_model=list[Movie],
 )
-def get_movies(current_user: Annotated[User, Depends(get_current_active_user)]) -> Any:
-    return jsonable_encoder(crud.get_all_movies())
+def get_movies(
+    current_user: Annotated[User, Depends(get_current_active_user)],
+    db: Annotated[Session, Depends(get_db)],
+) -> Any:
+    return jsonable_encoder(crud.get_all_movies(db))
 
 
 @app.post("/movies", tags=["movies"], status_code=status.HTTP_201_CREATED)
@@ -91,9 +104,10 @@ def get_movies_by_category(
             min_length=5,
             max_length=15,
         ),
-    ]
+    ],
+    db: Annotated[Session, Depends(get_db)],
 ) -> Any:
-    movies = crud.get_movies_by_category(category)
+    movies = crud.get_movies_by_category(db, category)
     if not movies:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -109,9 +123,10 @@ def get_movies_by_category(
     response_model=Movie,
 )
 def get_movie(
-    movie_id: Annotated[int, Path(title="ID of the movie to get", ge=1, le=2000)]
+    movie_id: Annotated[int, Path(title="ID of the movie to get", ge=1, le=2000)],
+    db: Annotated[Session, Depends(get_db)],
 ) -> Any:
-    result = crud.get_movie_by_id(movie_id)
+    result = crud.get_movie_by_id(db, movie_id)
     if not result:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
