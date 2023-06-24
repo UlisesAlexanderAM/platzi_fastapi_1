@@ -37,3 +37,15 @@ def update_movie(db: Session, movie_id: int, modified_movie: schemas.MovieBase):
     db.commit()
     db.refresh(db_movie)
     return db_movie
+
+
+def delete_movie(db: Session, movie_id: int):
+    db_movie: models.Movie = get_movie_by_id(db, movie_id)
+    if not db_movie:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No se encontró la película con ID: {movie_id}.",
+        )
+    db.delete(db_movie)
+    db.commit()
+    return db_movie

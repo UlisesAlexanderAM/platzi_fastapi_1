@@ -3,22 +3,20 @@ from typing import Annotated, Any
 
 from fastapi import Body, Depends, FastAPI, HTTPException, Path, Query, status
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-
+import crud
 from config.database import Base, SessionLocal, engine
-from data import fake_users_db, movies
-from models import models, schemas
+from data import fake_users_db
+from models import schemas
 from security import (
     authenticate_user,
     create_access_token,
     get_current_active_user,
     settings,
 )
-
-import crud
 
 app = FastAPI()
 app.title = "My application with FastAPI and Platzi"
@@ -154,13 +152,6 @@ def update_movie(
 def delete_movie(
     movie_id: Annotated[int, Path(title="ID of the movie to delete", ge=1, le=2000)],
     db: Annotated[Session, Depends(get_db)],
-) -> JSONResponse:
-    try:
-        movie = crud.get_movie_by_id(db, movie_id)
-    except StopIteration:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Pelicula con ID {movie_id} no encontrada",
-        ) from None
-    movies.remove(movie)
-    return JSONResponse(content={"message": "Se ha eliminado la película"})
+):
+    movie = crud.delete_movie(db, movie_id)
+    return f"Se ha eliminado la película {jsonable_encoder(movie)}"
