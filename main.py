@@ -11,14 +11,14 @@ from sqlalchemy.orm import Session
 from config.database import Base, SessionLocal, engine
 from data import fake_users_db, movies
 from models import models, schemas
-from security import (
+from lib.security import (
     authenticate_user,
     create_access_token,
     get_current_active_user,
     settings,
 )
 
-from . import crud
+from lib import crud
 
 app = FastAPI()
 app.title = "My application with FastAPI and Platzi"
@@ -40,7 +40,7 @@ def message() -> HTMLResponse:
     return HTMLResponse("<h1>Hello world!</h1>")
 
 
-@app.post("/token", response_model=schemas.Token)
+@app.post("/token", tags=["auth"], response_model=schemas.Token)
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
 ):
@@ -74,19 +74,17 @@ def get_movies(
 @app.post("/movies", tags=["movies"], status_code=status.HTTP_201_CREATED)
 def add_movie(
     new_movie: Annotated[
-        schemas.Movie,
+        schemas.MovieBase,
         Body(
             title="Request body",
             description="Request body with the movie to add",
             embed=True,
         ),
-    ]
-) -> JSONResponse:
-    db = Session()
-    movie = models.Movie(**new_movie.dict())
-    db.add(movie)
-    db.commit()
-    return JSONResponse(content={"message": "Se ha registrado la película"})
+    ],
+    db: Annotated[Session, Depends(get_db)],
+):
+    movie_added = crud.add_movie(db, new_movie)
+    return f"Se ha registrado la película: {jsonable_encoder(movie_added)}"
 
 
 @app.get(
@@ -163,7 +161,7 @@ def delete_movie(
     db: Annotated[Session, Depends(get_db)],
 ) -> JSONResponse:
     try:
-        movie = crud.get_movie_by_id(db,movie_id)
+        movie = crud.get_movie_by_id(db, movie_id)
     except StopIteration:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
