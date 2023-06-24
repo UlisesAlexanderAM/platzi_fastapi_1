@@ -93,7 +93,7 @@ def get_movies_by_category(
         ),
     ]
 ) -> Any:
-    movies = filter_by_category(category)
+    movies = crud.get_movies_by_category(category)
     if not movies:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -111,7 +111,7 @@ def get_movies_by_category(
 def get_movie(
     movie_id: Annotated[int, Path(title="ID of the movie to get", ge=1, le=2000)]
 ) -> Any:
-    result = filter_by_id(movie_id)
+    result = crud.get_movie_by_id(movie_id)
     if not result:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -132,7 +132,7 @@ def update_movie(
     ],
     movie_id: Annotated[int, Path(title="ID of the movie to modified", ge=1, le=2000)],
 ) -> JSONResponse:
-    movie = filter_by_id(movie_id)
+    movie = crud.get_movie_by_id(movie_id)
     # movie.title = movie_modified.title
     # movie.overview = movie_modified.overview
     # movie.year = movie_modified.year
@@ -146,7 +146,7 @@ def delete_movie(
     movie_id: Annotated[int, Path(title="ID of the movie to delete", ge=1, le=2000)]
 ) -> JSONResponse:
     try:
-        movie = filter_by_id(movie_id)
+        movie = crud.get_movie_by_id(movie_id)
     except StopIteration:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
