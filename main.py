@@ -124,13 +124,13 @@ def get_movie(
     movie_id: Annotated[int, Path(title="ID of the movie to get", ge=1, le=2000)],
     db: Annotated[Session, Depends(get_db)],
 ) -> Any:
-    result = crud.get_movie_by_id(db, movie_id)
-    if not result:
+    movie = crud.get_movie_by_id(db, movie_id)
+    if not movie:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"No se encontró la película con ID: {movie_id}.",
         )
-    return jsonable_encoder(result)
+    return movie
 
 
 @app.put("/movies/{movie_id}", tags=["movies"], status_code=status.HTTP_200_OK)
