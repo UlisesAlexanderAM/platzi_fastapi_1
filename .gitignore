@@ -408,3 +408,4 @@ tags
 *_REMOTE_*.txt
 
 # End of https://www.toptal.com/developers/gitignore/api/git
+.wakatime-project
